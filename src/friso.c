@@ -39,7 +39,8 @@ FRISO_API int friso_init_from_ifile(
 		friso_t friso, friso_config_t config, fstring __ifile ) 
 {
 	FILE *__stream;
-	char __chars__[256], __key__[128], *__line__, __lexi__[128];
+	char __chars__[256], __key__[128], *__line__;
+	char __lexi__[160], lexpath[160];
 	uint_t i, t, __hit__ = 0, __length__;
 
 	char *slimiter = NULL;
@@ -146,32 +147,45 @@ FRISO_API int friso_init_from_ifile(
 			//add relative path search support
 			//@added: 2014-05-24
 			//convert the relative path to absolute path base on the path of friso.ini
+			//improved at @date: 2014-10-26
+
 #ifdef FRISO_WINNT
 			if ( __lexi__[1] != ':' && flen != 0 )
-			{
-				memcpy(__lexi__ + flen, __lexi__, __hit__);
-				memcpy(__lexi__, __ifile, flen);
-				//count the new length
-				flen = flen + __hit__;
-				if ( __lexi__[flen-1] != '/'  ) __lexi__[flen] = '/';
-				__lexi__[flen+1] = '\0';
-			}
 #else
 			if ( __lexi__[0] != '/' && flen != 0 )
-			{
-				memcpy(__lexi__ + flen, __lexi__, __hit__);
-				memcpy(__lexi__, __ifile, flen);
-				//count the new length
-				flen = flen + __hit__;
-				if ( __lexi__[flen-1] != '/'  ) __lexi__[flen] = '/';
-				__lexi__[flen+1] = '\0';
-			}
 #endif
+			{
+				if ( (flen + __hit__) > sizeof(lexpath) - 1 )
+				{
+					printf("[Error]: Buffer is not long enough to hold the final lexicon path");
+					printf(" with a length of {%d} at function friso.c#friso_init_from_ifile", flen + __hit__);
+					return 0;
+				}
+
+				memcpy(lexpath, __ifile, flen);
+				memcpy(lexpath + flen, __lexi__, __hit__ - 1);
+				//count the new length
+				flen = flen + __hit__ - 1;
+				if ( lexpath[flen-1] != '/'  ) lexpath[flen] = '/';
+				lexpath[flen+1] = '\0';
+			}
+			else
+			{
+				memcpy(lexpath, __lexi__, __hit__);
+				lexpath[__hit__] = '\0';
+				if ( lexpath[__hit__ - 1] != '/'  ) 
+				{
+					lexpath[__hit__] = '/';
+					lexpath[__hit__+1] = '\0';
+				}
+			}
+
+			//printf("lexpath=%s\n", lexpath);
 
 			friso->dic = friso_dic_new();
 			//add charset check for max word length counting
 			friso_dic_load_from_ifile( friso, config, 
-					__lexi__, config->max_len * (friso->charset == FRISO_UTF8 ? 3 : 2) );
+					lexpath, config->max_len * (friso->charset == FRISO_UTF8 ? 3 : 2) );
 		}
 
 		fclose( __stream );
@@ -470,7 +484,7 @@ __STATIC_API__ lex_entry_t next_basic_latin(
 		friso_config_t config,
 		friso_task_t task ) 
 {
-	int __convert = 0, t = 0;
+	int __convert = 0, t = 0, blen = 0;
 	int chkecm = 0, chkunits = 1, wspace = 0;
 
 	/* cause friso will convert full-width numeric and letters
@@ -533,6 +547,14 @@ __STATIC_API__ lex_entry_t next_basic_latin(
 		//upper-lower case convert
 		convert_upper_to_lower( friso, task, __convert );
 		convert_work_apply( friso, task, __convert );
+
+		//sound a little crazy, i did't limit the length of this
+		//@Added: 2015-01-16 night
+		if ( (wlen + task->bytes) >= __HITS_WORD_LENGTH__ )
+		{
+			break;
+		}
+
 		string_buffer_append( sb, task->buffer );
 		wlen += task->bytes;
 		task->idx += task->bytes;
@@ -592,9 +614,10 @@ __STATIC_API__ lex_entry_t next_basic_latin(
 	//check the tokenize loop is break by whitespace.
 	//	no need for all the following work if it is. 
 	//@added 2013-11-19
-	if ( wspace == 1 || task->idx == task->length ) {
-		e = new_lex_entry( string_buffer_devote(sb), 
-				NULL, 0, sb->length, __LEX_OTHER_WORDS__ );
+	if ( wspace == 1 || task->idx == task->length )
+	{
+		blen = sb->length;
+		e = new_lex_entry( string_buffer_devote(sb), NULL, 0, blen, __LEX_OTHER_WORDS__ );
 		e->rlen = wlen;
 		//set the secondary mask.
 		if ( ssseg ) task_ssseg_open(task);
@@ -632,8 +655,8 @@ __STATIC_API__ lex_entry_t next_basic_latin(
 		if ( fdunits != 1 && ssseg ) task_ssseg_open(task);
 
 		//creat the lexicon entry and return it.
-		e = new_lex_entry( string_buffer_devote(sb), 
-				NULL, 0, sb->length, __LEX_OTHER_WORDS__ );
+		blen = sb->length;
+		e = new_lex_entry( string_buffer_devote(sb), NULL, 0, blen, __LEX_OTHER_WORDS__ );
 		e->rlen = wlen;
 
 		return e;
@@ -705,8 +728,8 @@ __STATIC_API__ lex_entry_t next_basic_latin(
 	if ( fdunits != 1 && ssseg ) task_ssseg_open(task); 
 
 	//create the lexicon entry and return it.
-	e = new_lex_entry( string_buffer_devote(sb), 
-			NULL, 0, sb->length, __LEX_OTHER_WORDS__  );
+	blen = sb->length;
+	e = new_lex_entry( string_buffer_devote(sb), NULL, 0, blen, __LEX_OTHER_WORDS__ );
 	e->rlen = wlen;
 
 	return e;
@@ -1551,7 +1574,7 @@ FRISO_API friso_token_t next_mmseg_token(
 			 * when tmp is not NULL and sb will not be NULL too
 			 * 	except a CE word is found.
 			 *
-			 * @TODO: finished append the synonyms words on 23013-12-19.
+			 * @TODO: finished append the synonyms words on 2013-12-19.
 			 */
 			if ( tmp != NULL && sb != NULL ) 
 			{
@@ -1646,7 +1669,7 @@ FRISO_API friso_token_t next_mmseg_token(
 
 			//if the token is longer than __HITS_WORD_LENGTH__, drop it 
 			//copy the word to the task token buffer.
-			if ( lex->length >= __HITS_WORD_LENGTH__ ) continue;
+			//if ( lex->length >= __HITS_WORD_LENGTH__ ) continue;
 			memcpy(task->token->word, lex->word, lex->length);
 			task->token->type = lex->type;
 			task->token->length = lex->length;
@@ -1721,6 +1744,38 @@ FRISO_API friso_token_t next_detect_token(
 	lex_entry_t lex = NULL;
 	int i, __convert = 0, tbytes, wbytes;
 
+	/* {{{ task word pool check */
+	if ( ! link_list_empty( task->pool ) ) 
+	{
+		/*
+		 * load word from the word poll if it is not empty.
+		 *  this will make the next word more convenient and efficient.
+		 * 	often synonyms, newly created word will be stored in the poll.
+		 */
+		lex = ( lex_entry_t ) link_list_remove_first( task->pool );
+		memcpy(task->token->word, lex->word, lex->length);
+		task->token->type = lex->type;
+		task->token->length = lex->length;
+		task->token->rlen = lex->rlen;
+		task->token->offset = lex->offset;
+		task->token->word[lex->length] = '\0';
+
+		/*
+		 * __LEX_NCSYN_WORDS__:
+		 *  these lex_entry_t was created to store the the synonyums words.
+		 * 	and its word pointed to the lex_entry_t's synonyms word of
+		 * 		friso->dic, so :
+		 * 	free the lex_entry_t but not its word here.
+		 */
+		if ( lex->type == __LEX_NCSYN_WORDS__ ) 
+		{
+			free_lex_entry( lex );
+		}
+
+		return task->token;
+	}
+	/* }}} */
+
 	while ( task->idx < task->length ) 
 	{
 		lex = NULL;
@@ -1789,6 +1844,15 @@ FRISO_API friso_token_t next_detect_token(
 		task->token->rlen = wbytes;
 		task->token->offset = task->idx - wbytes;
 		task->token->word[(int)lex->length] = '\0';
+
+		//check and append the synonyms words
+		if ( config->add_syn && lex->syn != NULL ) 
+		{
+			if ( config->spx_out == 1 )
+				token_sphinx_output(task, lex);
+			else token_normal_output(task, lex, 0);
+		}
+
 		return task->token;
 	}
 
