@@ -318,3 +318,51 @@ FRISO_API fstring string_split_next(
     *_dst = '\0';
     return _dst;
 }
+
+/**
+ * get the next split fstring, and copy the 
+ * 	splited fstring into the __dst buffer . 
+ *
+ * @param	sentence_split_t
+ * @param	__dst
+ * @return	fstring (NULL if reach the end of the source 
+ * 		or there is no more segmentation)
+ */
+FRISO_API fstring sentence_split_next( 
+	string_split_t sst, fstring __dst) 
+{
+    uint_t i, _ok;
+    fstring _dst = __dst;
+
+    //check if reach the end of the fstring
+    if ( sst->idx >= sst->srcLen ) return NULL;
+
+    while ( 1 ) 
+    {
+    	_ok = 0;
+        for(i = 0; i < sst->delLen; i++)
+        {
+            if ( sst->source[sst->idx] == sst->delimiter[i] ) 
+            {
+                _ok = 1;
+                break;
+            }
+        }
+
+    	//find the delimiter here,
+    	//break the loop and self plus the sst->idx, then return the buffer . 
+    	if ( _ok == 1 ) {
+    	    sst->idx += 1;
+    	    break;
+    	}
+
+    	//coy the char to the buffer
+    	*_dst++ = sst->source[sst->idx++];
+    	//check if reach the end of the fstring
+    	if ( sst->idx >= sst->srcLen ) break;
+    }
+
+    *_dst = '\0';
+    return _dst;
+}
+

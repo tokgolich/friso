@@ -21,7 +21,6 @@ LIBRARY_DIR = /usr/lib
 INCLUDE_DIR = /usr/include/friso
 INSTALL_DIR = /usr/local/bin
 
-
 SOURCE = friso.o friso_array.o friso_hash.o friso_lexicon.o friso_link.o friso_string.o friso_ctype.o friso_UTF8.o friso_GBK.o
 
 all: share friso
@@ -34,6 +33,12 @@ share: $(SOURCE)
 
 friso: tst-friso.o
 	$(CC) tst-friso.o -o ./friso -L. -lfriso
+
+tst-lex: tst-lex.o
+	$(CC) tst-lex.o -o ./tst-lex -L. -lfriso
+
+tst-split: tst-split.o
+	$(CC) tst-split.o -o ./tst-split -L. -lfriso
 
 tst-friso.o: friso_API.h friso.h tst-friso.c
 	$(CC) $(FFLAGS) -c tst-friso.c
@@ -65,6 +70,12 @@ friso_UTF8.o: friso_API.h friso_ctype.h friso_UTF8.c
 friso_GBK.o: friso_API.h friso_ctype.h friso_GBK.c
 	$(CC) $(FFLAGS) -c friso_GBK.c
 
+tst-lex.o: friso.h tst-lex.c
+	$(CC) $(FFLAGS) -c tst-lex.c
+
+tst-split.o: tst-split.c friso_API.h
+	$(CC) $(FFLAGS) -c tst-split.c
+
 #clean all the object files.
 .PHONY: clean
 clean:
@@ -74,6 +85,8 @@ clean:
 	    then\
 	    rm -f friso;\
 	fi
+	rm -f tst-lex
+	rm -f tst-split
 
 #install friso
 install: friso

@@ -24,40 +24,42 @@ int main(int argc, char **argv)
     char _line[__LENGTH__];
     clock_t s_time, e_time;
     friso_t friso;
+	friso_config_t config;
 
     s_time = clock();
 
     friso = friso_new();
     friso->dic = friso_dic_new();
+	config = friso_new_config();
     //__CJK_WORDS__
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-main.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-admin.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-chars.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-cn-mz.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-cn-place.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-company.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-festival.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-flname.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-food.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-lang.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-nation.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-net.lex", __LENGTH__ );
-    friso_dic_load( friso, __LEX_CJK_WORDS__, "../dict/lex-org.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-main.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-admin.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-chars.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/UTF-8/lex-cn-mz.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-cn-place.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-company.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-festival.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-flname.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-food.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-lang.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-nation.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-net.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_WORDS__, "../dict/lex-org.lex", __LENGTH__ );
 
     //__CJK_UNITS__
-    friso_dic_load( friso, __LEX_CJK_UNITS__, "../dict/lex-units.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CJK_UNITS__, "../dict/lex-units.lex", __LENGTH__ );
     //__MIX_WORDS__
-    friso_dic_load( friso, __LEX_ECM_WORDS__, "../dict/lex-mixed.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_ECM_WORDS__, "../dict/lex-mixed.lex", __LENGTH__ );
     //__CN_LNAME__
-    friso_dic_load( friso, __LEX_CN_LNAME__, "../dict/lex-lname.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CN_LNAME__, "../dict/lex-lname.lex", __LENGTH__ );
     //__CN_SNAME__
-    friso_dic_load( friso, __LEX_CN_SNAME__, "../dict/lex-sname.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CN_SNAME__, "../dict/lex-sname.lex", __LENGTH__ );
     //__CN_DNAME1__
-    friso_dic_load( friso, __LEX_CN_DNAME1__, "../dict/lex-dname-1.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CN_DNAME1__, "../dict/lex-dname-1.lex", __LENGTH__ );
     //__CN_DNAME2__
-    friso_dic_load( friso, __LEX_CN_DNAME2__, "../dict/lex-dname-2.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CN_DNAME2__, "../dict/lex-dname-2.lex", __LENGTH__ );
     //__CN_LNA__
-    friso_dic_load( friso, __LEX_CN_LNA__, "../dict/lex-lna.lex", __LENGTH__ );
+    friso_dic_load( friso, config, __LEX_CN_LNA__, "../dict/lex-lna.lex", __LENGTH__ );
 
     e_time = clock();
 

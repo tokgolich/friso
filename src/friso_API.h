@@ -151,8 +151,7 @@ FRISO_API void free_string_split( string_split_t );
 FRISO_API fstring string_split_next( string_split_t, fstring );
 /* }}} */
 
-
-
+FRISO_API fstring sentence_split_next( string_split_t, fstring );
 
 /* {{{ dynamaic array interface define::start*/
 #define __DEFAULT_ARRAY_LIST_OPACITY__ 8
